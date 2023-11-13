@@ -1,9 +1,10 @@
-import { Center, Text } from "native-base";
+import { VStack } from "native-base";
+import { ScreenHeader } from "@components/screen-header";
 
 export function Profile() {
   return (
-    <Center>
-      <Text>Profile</Text>
-    </Center>
+    <VStack>
+      <ScreenHeader title="Perfil do usuário" />
+    </VStack>
   );
 }
