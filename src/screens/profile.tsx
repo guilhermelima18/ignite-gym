@@ -1,6 +1,7 @@
-import { useState } from "react";
 import { TouchableOpacity, ScrollView } from "react-native";
 import { Center, VStack, Skeleton, Text, Heading } from "native-base";
+
+import { UsePhoto } from "@hooks/use-photo";
 import { ScreenHeader } from "@components/screen-header";
 import { UserPhoto } from "@components/user-photo";
 import { Input } from "@components/input";
@@ -9,7 +10,9 @@ import { Button } from "@components/button";
 const PHOTO_SIZE = 33;
 
 export function Profile() {
-  const [photoIsLoading, setPhotoIsLoading] = useState(false);
+  const { userPhoto, photoIsLoading, handleUserPhotoSelect } = UsePhoto({
+    defaultImageURL: "https://github.com/guilhermelima18.png",
+  });
 
   return (
     <VStack flex={1}>
@@ -27,13 +30,13 @@ export function Profile() {
             />
           ) : (
             <UserPhoto
-              source={{ uri: "https://github.com/guilhermelima18.png" }}
+              source={{ uri: userPhoto }}
               alt="Foto do usuário"
               size={PHOTO_SIZE}
             />
           )}
 
-          <TouchableOpacity>
+          <TouchableOpacity onPress={handleUserPhotoSelect}>
             <Text
               color="green.500"
               fontWeight="bold"
@@ -50,7 +53,7 @@ export function Profile() {
         </Center>
 
         <VStack px={10} mt={12} mb={9}>
-          <Heading color="gray.200" fontSize="md" mb={2}>
+          <Heading color="gray.200" fontSize="md" mb={2} fontFamily="heading">
             Alterar senha
           </Heading>
           <Input
