@@ -1,11 +1,21 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { VStack, Image, Text, Center, Heading, ScrollView } from "native-base";
+import {
+  VStack,
+  Image,
+  Text,
+  Center,
+  Heading,
+  ScrollView,
+  useToast,
+} from "native-base";
 import { useNavigation } from "@react-navigation/native";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { api } from "../libs/axios";
 import { Input } from "@components/input";
 import { Button } from "@components/button";
+import { AppError } from "@utils/app-error";
 
 import BackgroundImg from "@assets/background.png";
 import LogoIcon from "@assets/logo.svg";
@@ -32,11 +42,14 @@ const createUserSchema = yup.object({
 
 export function SignUp() {
   const navigation = useNavigation();
+  const toast = useToast();
+
+  const [loading, setLoading] = useState(false);
 
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<CreateUserAccount>({
     resolver: yupResolver(createUserSchema),
     defaultValues: {
@@ -53,7 +66,32 @@ export function SignUp() {
   };
 
   const handleCreateAccount = useCallback(async (data: CreateUserAccount) => {
-    console.log(data);
+    setLoading(true);
+
+    try {
+      const response = await api.post("/users", {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      });
+
+      if (response?.data) {
+        navigation.goBack();
+      }
+    } catch (error) {
+      const isAppError = error instanceof AppError;
+      const title = isAppError
+        ? error.message
+        : "Não foi possível criar a conta. Tente novamente mais tarde.";
+
+      toast.show({
+        title,
+        placement: "top",
+        bgColor: "red.500",
+      });
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   return (
@@ -148,6 +186,8 @@ export function SignUp() {
           <Button
             title="Criar e acessar"
             onPress={handleSubmit(handleCreateAccount)}
+            loading={isSubmitting || loading}
+            isDisabled={isSubmitting || loading}
           />
         </Center>
 

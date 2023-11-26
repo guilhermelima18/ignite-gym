@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { VStack, Image, Text, Center, Heading, ScrollView } from "native-base";
 import { Controller, useForm } from "react-hook-form";
@@ -9,7 +10,6 @@ import { Button } from "@components/button";
 
 import BackgroundImg from "@assets/background.png";
 import LogoIcon from "@assets/logo.svg";
-import { useCallback } from "react";
 
 type LoginUser = {
   email: string;

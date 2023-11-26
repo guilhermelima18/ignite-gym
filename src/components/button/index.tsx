@@ -1,11 +1,22 @@
-import { Button as ButtonNativeBase, IButtonProps, Text } from "native-base";
+import {
+  Button as ButtonNativeBase,
+  IButtonProps,
+  Text,
+  Spinner,
+} from "native-base";
 
 interface ButtonProps extends IButtonProps {
   title: string;
   variant?: "solid" | "outline";
+  loading?: boolean;
 }
 
-export const Button = ({ title, variant = "solid", ...rest }: ButtonProps) => {
+export const Button = ({
+  title,
+  variant = "solid",
+  loading,
+  ...rest
+}: ButtonProps) => {
   return (
     <ButtonNativeBase
       bgColor={variant === "outline" ? "transparent" : "green.700"}
@@ -19,13 +30,17 @@ export const Button = ({ title, variant = "solid", ...rest }: ButtonProps) => {
       }}
       {...rest}
     >
-      <Text
-        color={variant === "outline" ? "green.500" : "white"}
-        fontFamily="heading"
-        fontSize="sm"
-      >
-        {title}
-      </Text>
+      {loading ? (
+        <Spinner size="sm" color="white" />
+      ) : (
+        <Text
+          color={variant === "outline" ? "green.500" : "white"}
+          fontFamily="heading"
+          fontSize="sm"
+        >
+          {title}
+        </Text>
+      )}
     </ButtonNativeBase>
   );
 };
