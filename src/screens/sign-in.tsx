@@ -1,10 +1,19 @@
 import { useCallback } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { VStack, Image, Text, Center, Heading, ScrollView } from "native-base";
+import {
+  VStack,
+  Image,
+  Text,
+  Center,
+  Heading,
+  ScrollView,
+  Avatar,
+} from "native-base";
 import { Controller, useForm } from "react-hook-form";
 import { AuthNavigatorRoutesProps } from "@routes/auth-routes";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useAuth } from "@hooks/use-auth";
 import { Input } from "@components/input";
 import { Button } from "@components/button";
 
@@ -28,16 +37,20 @@ export function SignIn() {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<LoginUser>({ resolver: yupResolver(loginUserSchema) });
   const navigation = useNavigation<AuthNavigatorRoutesProps>();
+
+  const { signIn } = useAuth();
 
   const handleNewAccount = () => {
     navigation.navigate("signUp");
   };
 
   const handleUserLogin = useCallback(async (data: LoginUser) => {
-    console.log(data);
+    const { email, password } = data;
+
+    await signIn(email, password);
   }, []);
 
   return (
@@ -102,7 +115,11 @@ export function SignIn() {
             name="password"
           />
 
-          <Button title="Acessar" onPress={handleSubmit(handleUserLogin)} />
+          <Button
+            title="Acessar"
+            onPress={handleSubmit(handleUserLogin)}
+            loading={isSubmitting}
+          />
         </Center>
 
         <Center mt={24}>
