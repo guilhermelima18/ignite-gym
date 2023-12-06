@@ -1,14 +1,6 @@
 import { useCallback } from "react";
 import { useNavigation } from "@react-navigation/native";
-import {
-  VStack,
-  Image,
-  Text,
-  Center,
-  Heading,
-  ScrollView,
-  Avatar,
-} from "native-base";
+import { VStack, Image, Text, Center, Heading, ScrollView } from "native-base";
 import { Controller, useForm } from "react-hook-form";
 import { AuthNavigatorRoutesProps } from "@routes/auth-routes";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -119,6 +111,7 @@ export function SignIn() {
             title="Acessar"
             onPress={handleSubmit(handleUserLogin)}
             loading={isSubmitting}
+            isDisabled={isSubmitting}
           />
         </Center>
 

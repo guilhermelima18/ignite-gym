@@ -1,8 +1,13 @@
-import { ReactNode, createContext, useState } from "react";
+import { ReactNode, createContext, useEffect, useState } from "react";
 import { useToast } from "native-base";
 import { User } from "../dto/user";
 import { api } from "../libs/axios";
 import { AppError } from "@utils/app-error";
+import {
+  storageUserDelete,
+  storageUserGet,
+  storageUserSave,
+} from "@storage/storage-user";
 
 type UserToken = {
   token: string;
@@ -12,7 +17,9 @@ type UserToken = {
 type AuthContextProps = {
   user: User;
   userToken: UserToken;
+  isLoadingUserStorage: boolean;
   signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
 };
 
 type AuthProviderProps = {
@@ -24,6 +31,7 @@ export const AuthContext = createContext({} as AuthContextProps);
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User>({} as User);
   const [userToken, setUserToken] = useState<UserToken>({} as UserToken);
+  const [isLoadingUserStorage, setIsLoadingUserStorage] = useState(true);
 
   const toast = useToast();
 
@@ -32,16 +40,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const response = await api.post("/sessions", { email, password });
 
       if (response.data) {
-        setUser({
-          ...user,
-          id: response.data.user.id,
-          name: response.data.user.name,
-        });
+        setUser(response.data.user);
 
         setUserToken({
           token: response.data.token,
           refresh_token: response.data.refresh_token,
         });
+
+        storageUserSave(response.data.user);
       }
     } catch (error) {
       const isAppError = error instanceof AppError;
@@ -57,8 +63,41 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
+  async function getUserData() {
+    try {
+      const userLogged = await storageUserGet();
+
+      if (userLogged) {
+        setUser(userLogged);
+      }
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoadingUserStorage(false);
+    }
+  }
+
+  async function signOut() {
+    try {
+      setIsLoadingUserStorage(true);
+      setUser({} as User);
+
+      await storageUserDelete();
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoadingUserStorage(false);
+    }
+  }
+
+  useEffect(() => {
+    getUserData();
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, userToken, signIn }}>
+    <AuthContext.Provider
+      value={{ user, userToken, isLoadingUserStorage, signIn, signOut }}
+    >
       {children}
     </AuthContext.Provider>
   );
