@@ -1,45 +1,51 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { HStack, VStack, FlatList, Heading, Text } from "native-base";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { AppNavigatorRoutesProps } from "@routes/app-routes";
+import { useGroups } from "@hooks/use-groups";
+import { useExercises } from "@hooks/use-exercises";
 import { Header } from "@components/header";
 import { Group } from "@components/group";
 import { ExerciseCard } from "@components/exercise-card";
-
-const groupsList = ["costa", "ombro", "biceps", "triceps"];
-const exercises = [
-  "Puxa frontal",
-  "Remada curvada",
-  "Remada unilateral",
-  "Levantamento terra",
-  "Rosca alternada",
-  "Rosca martelo",
-];
+import { Loading } from "@components/loading";
 
 export function Home() {
   const navigation = useNavigation<AppNavigatorRoutesProps>();
-  const [groupSelected, setGroupSelected] = useState("costa");
+  const { groups, getGroups } = useGroups();
+  const { exercises, exercisesLoading, getExercises } = useExercises();
 
-  const handleChangeGroupSelected = useCallback((group: string) => {
+  const [groupSelected, setGroupSelected] = useState("antebraço");
+
+  const handleOpenExerciseDetails = useCallback((exerciseId: string) => {
+    navigation.navigate("exercise", { exerciseId });
+  }, []);
+
+  const handleChangeExercise = useCallback(async (group: string) => {
     setGroupSelected(group);
   }, []);
 
-  const handleOpenExerciseDetails = useCallback(() => {
-    navigation.navigate("exercise");
+  useEffect(() => {
+    getGroups();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      getExercises(groupSelected);
+    }, [groupSelected])
+  );
 
   return (
     <VStack flex={1}>
       <Header />
 
       <FlatList
-        data={groupsList}
+        data={groups}
         keyExtractor={(item) => item}
         renderItem={({ item }) => (
           <Group
             name={item}
-            isActive={groupSelected.toLowerCase() === item.toLowerCase()}
-            onPress={() => handleChangeGroupSelected(item)}
+            isActive={groupSelected?.toLowerCase() === item?.toLowerCase()}
+            onPress={() => handleChangeExercise(item)}
           />
         )}
         horizontal
@@ -61,15 +67,22 @@ export function Home() {
           </Text>
         </HStack>
 
-        <FlatList
-          data={exercises}
-          keyExtractor={(item) => item}
-          renderItem={({ item }) => (
-            <ExerciseCard exercise={item} onPress={handleOpenExerciseDetails} />
-          )}
-          showsVerticalScrollIndicator={false}
-          _contentContainerStyle={{ paddingBottom: 20 }}
-        />
+        {exercisesLoading ? (
+          <Loading />
+        ) : (
+          <FlatList
+            data={exercises}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <ExerciseCard
+                exercise={item}
+                onPress={() => handleOpenExerciseDetails(item.id)}
+              />
+            )}
+            showsVerticalScrollIndicator={false}
+            _contentContainerStyle={{ paddingBottom: 20 }}
+          />
+        )}
       </VStack>
     </VStack>
   );

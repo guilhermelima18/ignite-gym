@@ -1,6 +1,18 @@
 import { HStack, Heading, Text, VStack } from "native-base";
 
-export const HistoryCard = () => {
+type HistoryCardProps = {
+  history: {
+    id: number;
+    user_id: number;
+    exercise_id: number;
+    name: string;
+    group: string;
+    created_at: Date;
+    hour: string;
+  };
+};
+
+export const HistoryCard = ({ history }: HistoryCardProps) => {
   return (
     <HStack
       bg="gray.600"
@@ -20,15 +32,15 @@ export const HistoryCard = () => {
           fontFamily="heading"
           numberOfLines={1}
         >
-          Costas
+          {history.group}
         </Heading>
         <Text color="gray.100" fontSize="lg" numberOfLines={1}>
-          Puxada frontal
+          {history.name}
         </Text>
       </VStack>
 
       <Text color="gray.300" fontSize="md">
-        08:56
+        {history.hour}
       </Text>
     </HStack>
   );
