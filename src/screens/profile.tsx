@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { TouchableOpacity, ScrollView } from "react-native";
 import { Center, VStack, Skeleton, Text, Heading } from "native-base";
 import { useForm, Controller } from "react-hook-form";
@@ -10,33 +11,34 @@ import { ScreenHeader } from "@components/screen-header";
 import { UserPhoto } from "@components/user-photo";
 import { Input } from "@components/input";
 import { Button } from "@components/button";
-import { useCallback } from "react";
 
 const PHOTO_SIZE = 33;
 
 type UserChangeProps = {
   name: string;
   email?: string;
-  old_password: string;
-  new_password: string;
-  confirm_password: string;
+  old_password?: string;
+  new_password?: string;
+  confirm_password?: string;
 };
 
 const changeUserSchema = yup.object({
-  name: yup.string().required("Nome é obrigatório."),
+  name: yup.string().required(),
   email: yup.string().email(),
-  old_password: yup.string().required("A senha antiga é obrigatória."),
+  old_password: yup.string(),
   new_password: yup
     .string()
-    .min(6, "A senha deve conter no mínimo 6 caracteres.")
-    .required("A nova senha é obrigatória."),
+    .min(6, "A senha deve conter no mínimo 6 caracteres."),
   confirm_password: yup
     .string()
-    .required("Confirme a senha.")
     .oneOf(
       [yup.ref("new_password"), null!],
       "A confirmação da senha não confere."
-    ),
+    )
+    .when("new_password", {
+      is: (field: any) => field,
+      then: yup.string().required("Informe a confirmação de senha"),
+    }),
 });
 
 export function Profile() {
@@ -49,7 +51,7 @@ export function Profile() {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<UserChangeProps>({
+  } = useForm({
     resolver: yupResolver(changeUserSchema),
     defaultValues: {
       name: user.name,
