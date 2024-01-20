@@ -1,21 +1,12 @@
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { Controller, useForm } from "react-hook-form";
-import {
-  VStack,
-  Image,
-  Text,
-  Center,
-  Heading,
-  ScrollView,
-  useToast,
-} from "native-base";
+import { VStack, Image, Text, Center, Heading, ScrollView } from "native-base";
 import { useNavigation } from "@react-navigation/native";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { api } from "../services/axios";
+import { useUser } from "@hooks/use-user";
 import { Input } from "@components/input";
 import { Button } from "@components/button";
-import { AppError } from "@utils/app-error";
 
 import BackgroundImg from "@assets/background.png";
 import LogoIcon from "@assets/logo.svg";
@@ -42,9 +33,7 @@ const createUserSchema = yup.object({
 
 export function SignUp() {
   const navigation = useNavigation();
-  const toast = useToast();
-
-  const [loading, setLoading] = useState(false);
+  const { createUserLoading, createUser } = useUser();
 
   const {
     control,
@@ -66,31 +55,16 @@ export function SignUp() {
   };
 
   const handleCreateAccount = useCallback(async (data: CreateUserAccount) => {
-    setLoading(true);
+    const createUserObj = {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+    };
 
-    try {
-      const response = await api.post("/users", {
-        name: data.name,
-        email: data.email,
-        password: data.password,
-      });
+    const response = await createUser(createUserObj);
 
-      if (response?.data) {
-        navigation.goBack();
-      }
-    } catch (error) {
-      const isAppError = error instanceof AppError;
-      const title = isAppError
-        ? error.message
-        : "Não foi possível criar a conta. Tente novamente mais tarde.";
-
-      toast.show({
-        title,
-        placement: "top",
-        bgColor: "red.500",
-      });
-    } finally {
-      setLoading(false);
+    if (response) {
+      handleGoBack();
     }
   }, []);
 
@@ -186,8 +160,8 @@ export function SignUp() {
           <Button
             title="Criar e acessar"
             onPress={handleSubmit(handleCreateAccount)}
-            loading={isSubmitting || loading}
-            isDisabled={isSubmitting || loading}
+            loading={isSubmitting || createUserLoading}
+            isDisabled={isSubmitting || createUserLoading}
           />
         </Center>
 

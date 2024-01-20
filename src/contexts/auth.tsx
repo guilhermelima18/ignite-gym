@@ -19,6 +19,7 @@ type AuthContextProps = {
   isLoadingUserStorage: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  getUserData: () => Promise<void>;
 };
 
 type AuthProviderProps = {
@@ -113,7 +114,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoadingUserStorage, signIn, signOut }}
+      value={{ user, isLoadingUserStorage, signIn, signOut, getUserData }}
     >
       {children}
     </AuthContext.Provider>

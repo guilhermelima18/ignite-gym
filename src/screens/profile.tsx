@@ -1,12 +1,15 @@
 import { useCallback } from "react";
 import { TouchableOpacity, ScrollView } from "react-native";
 import { Center, VStack, Skeleton, Text, Heading } from "native-base";
+import { useNavigation } from "@react-navigation/native";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
 import { UsePhoto } from "@hooks/use-photo";
 import { useAuth } from "@hooks/use-auth";
+import { useUser } from "@hooks/use-user";
+import { AppNavigatorRoutesProps } from "@routes/app-routes";
 import { ScreenHeader } from "@components/screen-header";
 import { UserPhoto } from "@components/user-photo";
 import { Input } from "@components/input";
@@ -42,10 +45,13 @@ const changeUserSchema = yup.object({
 });
 
 export function Profile() {
-  const { user } = useAuth();
+  const { user, getUserData } = useAuth();
+  const { updateUser } = useUser();
   const { userPhoto, photoIsLoading, handleUserPhotoSelect } = UsePhoto({
     defaultImageURL: "https://github.com/guilhermelima18.png",
   });
+
+  const navigation = useNavigation<AppNavigatorRoutesProps>();
 
   const {
     control,
@@ -60,7 +66,21 @@ export function Profile() {
   });
 
   const onUserChange = useCallback(async (data: UserChangeProps) => {
-    console.log(data);
+    const updateUserObj = {
+      name: data.name,
+      password: data.new_password!,
+      old_password: data.old_password!,
+    };
+
+    const response = await updateUser(updateUserObj);
+
+    if (response) {
+      await getUserData();
+
+      setTimeout(() => {
+        navigation.navigate("home");
+      }, 500);
+    }
   }, []);
 
   return (

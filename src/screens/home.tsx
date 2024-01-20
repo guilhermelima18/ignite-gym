@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { HStack, VStack, FlatList, Heading, Text } from "native-base";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { AppNavigatorRoutesProps } from "@routes/app-routes";
+import { useAuth } from "@hooks/use-auth";
 import { useGroups } from "@hooks/use-groups";
 import { useExercises } from "@hooks/use-exercises";
+import { useUser } from "@hooks/use-user";
 import { Header } from "@components/header";
 import { Group } from "@components/group";
 import { ExerciseCard } from "@components/exercise-card";
@@ -11,6 +13,9 @@ import { Loading } from "@components/loading";
 
 export function Home() {
   const navigation = useNavigation<AppNavigatorRoutesProps>();
+  const { user, signOut } = useAuth();
+  const { userLogged, getUser } = useUser();
+
   const { groups, getGroups } = useGroups();
   const { exercises, exercisesLoading, getExercises } = useExercises();
 
@@ -34,9 +39,15 @@ export function Home() {
     }, [groupSelected])
   );
 
+  useFocusEffect(
+    useCallback(() => {
+      getUser({ email: user.email });
+    }, [])
+  );
+
   return (
     <VStack flex={1}>
-      <Header />
+      <Header user={userLogged} signOut={signOut} />
 
       <FlatList
         data={groups}
